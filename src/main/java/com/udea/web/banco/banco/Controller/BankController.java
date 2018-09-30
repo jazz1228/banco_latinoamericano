@@ -17,8 +17,7 @@ import java.text.ParseException;
 public class BankController {
     @Autowired
     AccountRepository accountRepository;
-    @Autowired
-    CardRepository cardRepository;
+
     @Autowired
     CountryRepository countryRepository;
     @Autowired
@@ -32,6 +31,10 @@ public class BankController {
     @PostMapping("/search")
     public Search getAllHomes(@RequestBody String search) throws JsonProcessingException, ParseException {
 
+        accountRepository
+
 
     }
+
+    
 }

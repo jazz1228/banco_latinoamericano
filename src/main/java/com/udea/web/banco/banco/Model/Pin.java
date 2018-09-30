@@ -1,10 +1,10 @@
 package com.udea.web.banco.banco.Model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.springframework.context.annotation.Primary;
+
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+
 import java.io.Serializable;
 
 @Entity
@@ -13,8 +13,11 @@ import java.io.Serializable;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Pin implements Serializable {
 
-
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private int id;
+
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = User.class)
     @JoinColumn(name="idUser")
     private User idUser;
@@ -22,6 +25,14 @@ public class Pin implements Serializable {
     private String number;
     private String startDate;
     private String endDate;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public User getIdUser() {
         return idUser;

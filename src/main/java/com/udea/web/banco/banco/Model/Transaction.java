@@ -15,6 +15,7 @@ public class Transaction {
 
 
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = Account.class)
