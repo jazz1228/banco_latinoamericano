@@ -28,13 +28,13 @@ public class BankController {
     UserRepository userRepository;
 
 
-    @PostMapping("/search")
+    /*@PostMapping("/search")
     public Search getAllHomes(@RequestBody String search) throws JsonProcessingException, ParseException {
 
-        accountRepository
 
 
-    }
 
-    
+    }*/
+
+
 }
