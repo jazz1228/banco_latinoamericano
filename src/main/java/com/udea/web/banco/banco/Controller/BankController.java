@@ -20,6 +20,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.SecureRandom;
+import java.time.Instant;
 import java.util.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -31,6 +32,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
 import java.time.Duration;
+import java.util.Map;
 import java.util.Random;
 
 @RestController
@@ -63,14 +65,14 @@ public class BankController {
             //Decodificar
             user=userRepository.findUser(correo,contrasena);
             if (user!=null){
-                String pin =generatePin();
+                String pin =generatePin("ingreso");
                 //Obtengo la fecha del sistema
                 Date date = new Date();
                 DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
                 String startDate=dateFormat.format(date);
                 while(pinRepository.findByNumber(pin)!=null){
                     //Genero pin y envio al celular del user
-                    pin =generatePin();
+                    pin =generatePin("ingreso");
                 }
                     //Creo y guardo el pin en la base de datos
                     sendPin(pin, user.getPhone());
@@ -86,13 +88,13 @@ public class BankController {
             }
 
             else{
-                MessageObject mensaje=new MessageObject(session.getId());
+                MessageObject mensaje=new MessageObject("error");
                 return mensaje;
             }
 
         }catch (Exception e){
 
-            MessageObject mensaje=new MessageObject(session.getId());
+            MessageObject mensaje=new MessageObject("error");
             return mensaje;
         }
     }
@@ -103,16 +105,18 @@ public class BankController {
         TokenObject tokenObject;
         try{
             User user;
-            Duration s=Duration.ofSeconds(2);
+            Duration minus=Duration.ofMinutes(5);
             JSONObject obj=new JSONObject(credentials);
             String correo=obj.getString("correo");
             String pin = obj.getString("pin");
             user=userRepository.findUserByEmail(correo);
             String aux=pinRepository.findByNumber(pin).getEndDate();
             if(pinRepository.findByNumber(pin)!=null && aux.equals(".")) {
+
                 tokenObject = new TokenObject(generateToken(),user.getRole());
                 session = new MapSession(tokenObject.getToken());
-                session.setMaxInactiveInterval(s);
+                session.setAttribute("id",user.getId());
+                session.setMaxInactiveInterval(minus);
                 return tokenObject;
             }else
                 return tokenObject =new TokenObject("error","");
@@ -193,9 +197,16 @@ public class BankController {
         String random1 = Long.toString(longToken,1021202322);
         return random1;
     }
-    public String generatePin(){
+    public String generatePin(String tipo){
         Random rgn = new Random();
-        int digi=rgn.nextInt(9000)+1000;
+        int num;
+        if(tipo.equals("ingreso")){
+            num=1000;
+
+        }else{
+            num=10000;
+        }
+        int digi=rgn.nextInt(9000)+num;
         return Integer.toString(digi);
     }
 
