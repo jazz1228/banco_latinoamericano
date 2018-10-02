@@ -26,8 +26,20 @@ public class User {
     @JoinColumn(name="country")
     private Country country;
 
+    @OneToOne(fetch = FetchType.LAZY, targetEntity = Account.class)
+    @JoinColumn(name="numberAccount")
+    private Account numberAccount;
+
     private String email;
     private String role;
+
+    public Account getNumberAccount() {
+        return numberAccount;
+    }
+
+    public void setNumberAccount(Account numberAccount) {
+        this.numberAccount = numberAccount;
+    }
 
     public String getId() {
         return id;

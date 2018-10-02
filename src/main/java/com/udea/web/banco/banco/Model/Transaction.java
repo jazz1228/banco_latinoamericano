@@ -18,13 +18,14 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
+
+    private String account;
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = Account.class)
-    @JoinColumn(name="account", referencedColumnName = "number")
-    private Account account;
+    @JoinColumn(name="finalAccount", referencedColumnName = "number", insertable = false, updatable = false)
+    private Account finalAccount;
 
 
-    private String finalAccount;
-    private int transactionNumber;
 
     private String date;
     private String type;
@@ -39,30 +40,20 @@ public class Transaction {
         this.id = id;
     }
 
-    public Account getAccount() {
+    public String getAccount() {
         return account;
     }
 
-
-
-    public void setAccount(Account account) {
+    public void setAccount(String account) {
         this.account = account;
     }
 
-    public String getFinalAccount() {
+    public Account getFinalAccount() {
         return finalAccount;
     }
 
-    public void setFinalAccount(String finalAccount) {
+    public void setFinalAccount(Account finalAccount) {
         this.finalAccount = finalAccount;
-    }
-
-    public int getTransactionNumber() {
-        return transactionNumber;
-    }
-
-    public void setTransactionNumber(int transactionNumber) {
-        this.transactionNumber = transactionNumber;
     }
 
     public String getDate() {

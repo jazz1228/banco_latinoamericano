@@ -16,8 +16,6 @@ public class Account{
     @Id
     private String number;
 
-    private String id;
-
     private double balance;
     private String type;
     private String status;
@@ -31,15 +29,7 @@ public class Account{
         this.number = number;
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public double getBalance() {
+   public double getBalance() {
         return balance;
     }
 

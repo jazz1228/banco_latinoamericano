@@ -15,7 +15,7 @@ public class Country {
     @Id
     private String name;
 
-   private String coin;
+    private String coin;
 
     public String getName() {
         return name;
@@ -32,5 +32,6 @@ public class Country {
     public void setCoin(String coin) {
         this.coin = coin;
     }
+
 }
 
