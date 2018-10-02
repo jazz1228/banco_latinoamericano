@@ -154,6 +154,28 @@ public class BankController {
 
     }
 
+    @GetMapping("/BuscarPorCuenta")
+    public String BuscarPorCuenta (@RequestBody String Busqueda,@RequestHeader String token) throws JsonProcessingException, ParseException, JSONException {
+
+        Account account;
+        User user;
+
+        JSONObject obj=new JSONObject(Busqueda);
+
+        //Conversion a Json a java
+        String numeroCuenta=obj.getString("numeroCuenta");
+
+        account = accountRepository.findById(numeroCuenta);
+        user = userRepository.findByNumberAccount(account);//verificar
+
+
+
+
+        return "Exitoso";
+
+
+    }
+
     public  Double convertMoney(Double monto, String monedaOrigen, String monedaDestino ){
         return monto;
     }
