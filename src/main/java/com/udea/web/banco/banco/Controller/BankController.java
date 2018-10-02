@@ -7,6 +7,7 @@ import com.udea.web.banco.banco.Model.Account;
 import com.udea.web.banco.banco.Model.Pin;
 import com.udea.web.banco.banco.Model.Transaction;
 import com.udea.web.banco.banco.Model.User;
+import com.udea.web.banco.banco.Object.MessageObject;
 import com.udea.web.banco.banco.Object.PinObject;
 import com.udea.web.banco.banco.Object.TokenObject;
 import com.udea.web.banco.banco.Repository.*;
@@ -52,7 +53,7 @@ public class BankController {
 
 
     @PostMapping("/logini")
-    public String logini(@RequestBody String credentials){
+    public MessageObject logini(@RequestBody String credentials){
 
         User user=null;
         try {
@@ -63,20 +64,37 @@ public class BankController {
             user=userRepository.findUser(correo,contrasena);
             if (user!=null){
                 String pin =generatePin();
-                if(pinRepository.findByNumber(pin)!=null){
-
+                //Obtengo la fecha del sistema
+                Date date = new Date();
+                DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+                String startDate=dateFormat.format(date);
+                while(pinRepository.findByNumber(pin)!=null){
+                    //Genero pin y envio al celular del user
+                    pin =generatePin();
                 }
+                    //Creo y guardo el pin en la base de datos
+                    sendPin(pin, user.getPhone());
+                    Pin pin1=new Pin();
+                    pin1.setIdUser(user);
+                    pin1.setNumber(pin);
+                    pin1.setStartDate(startDate);
+                    pin1.setEndDate(".");
+                    pinRepository.save(pin1);
+                    MessageObject mensaje=new MessageObject("enviado");
+                    return mensaje;
+
             }
 
-            else
-                    return "Acceso incorrecto";
-                            //generatePin();
+            else{
+                MessageObject mensaje=new MessageObject(session.getId());
+                return mensaje;
+            }
+
         }catch (Exception e){
 
-            return "Men aca no fue";
+            MessageObject mensaje=new MessageObject(session.getId());
+            return mensaje;
         }
-
-
     }
 
 
@@ -84,17 +102,23 @@ public class BankController {
     public TokenObject loginF(@RequestBody String credentials){
         TokenObject tokenObject;
         try{
-            Duration s=Duration.ofMinutes(5);
+            User user;
+            Duration s=Duration.ofSeconds(2);
             JSONObject obj=new JSONObject(credentials);
             String correo=obj.getString("correo");
             String pin = obj.getString("pin");
-            tokenObject =new TokenObject(generateToken());
-            session= new MapSession(tokenObject.getToken());
-            session.setMaxInactiveInterval(s);
-            return tokenObject;
+            user=userRepository.findUserByEmail(correo);
+            String aux=pinRepository.findByNumber(pin).getEndDate();
+            if(pinRepository.findByNumber(pin)!=null && aux.equals(".")) {
+                tokenObject = new TokenObject(generateToken(),user.getRole());
+                session = new MapSession(tokenObject.getToken());
+                session.setMaxInactiveInterval(s);
+                return tokenObject;
+            }else
+                return tokenObject =new TokenObject("error","");
         }
         catch (Exception e){
-            return tokenObject =new TokenObject("error");
+            return tokenObject =new TokenObject("error","");
         }
 
 
@@ -157,6 +181,7 @@ public class BankController {
     public  Double convertMoney(Double monto, String monedaOrigen, String monedaDestino ){
         return monto;
     }
+
     public boolean validateToken(String token){
         return (session.getId()==token);
     }
@@ -176,13 +201,13 @@ public class BankController {
 
     public String sendPin(String pin, String numero) {
         try {
-            // Construct data
+            // construir estructura
             String apiKey = "apikey=" + "bXhJc7jMfE0-17gqqc6ZZs39PcUeCgrn8Q6fvxX3GZ";
-            String message = "&message=" + pin;
+            String message = "&message=" +"Verification code: "+ pin;
             String sender = "&sender=" + "El juan";
             String numbers = "&numbers=" + numero;
 
-            // Send data
+            // enviar datos
             HttpURLConnection conn = (HttpURLConnection) new URL("https://api.txtlocal.com/send/?").openConnection();
             String data = apiKey + numbers + message + sender;
             conn.setDoOutput(true);

@@ -2,16 +2,16 @@ package com.udea.web.banco.banco.Object;
 
 public class MessageObject {
 
-    private String message;
-    public MessageObject(String message){
-        this.message=message;
+    private String mensaje;
+    public MessageObject(String mensaje){
+        this.mensaje=mensaje;
     }
 
     public String getMessage() {
-        return message;
+        return mensaje;
     }
 
     public void setMessage(String message) {
-        this.message = message;
+        this.mensaje = message;
     }
 }

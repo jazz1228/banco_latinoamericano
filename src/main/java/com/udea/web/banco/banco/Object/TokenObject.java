@@ -3,8 +3,17 @@ package com.udea.web.banco.banco.Object;
 public class TokenObject {
 
     private String token;
-    public TokenObject(String token){
-        this.token=token;
+    private String rol;
+    public TokenObject(String token, String rol){
+        this.token=token; this.rol=rol;
+    }
+
+    public String getRol() {
+        return rol;
+    }
+
+    public void setRol(String rol) {
+        this.rol = rol;
     }
 
     public String getToken() {

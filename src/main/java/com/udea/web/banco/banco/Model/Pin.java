@@ -24,7 +24,7 @@ public class Pin implements Serializable {
 
     private String number;
     private String startDate;
-    private String endDate;
+    private String endDate; //Discutir si mas bien se usa un estatus para el pin
 
     public int getId() {
         return id;
