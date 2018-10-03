@@ -11,6 +11,7 @@ import com.udea.web.banco.banco.Object.MessageObject;
 import com.udea.web.banco.banco.Object.PinObject;
 import com.udea.web.banco.banco.Object.TokenObject;
 import com.udea.web.banco.banco.Repository.*;
+import org.hibernate.query.criteria.internal.expression.MapEntryExpression;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,8 @@ import java.text.SimpleDateFormat;
 
 
 import org.springframework.session.MapSession;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
@@ -51,7 +54,7 @@ public class BankController {
     UserRepository userRepository;
 
     //Manejar session desde el backEnd
-    MapSession session;
+    MapSession session=new MapSession("");
 
 
     @PostMapping("/logini")
@@ -75,7 +78,8 @@ public class BankController {
                     pin =generatePin("ingreso");
                 }
                     //Creo y guardo el pin en la base de datos
-                    sendPin(pin, user.getPhone());
+                    //sendPin(pin, user.getPhone());
+                    session.setAttribute("pin",pin);
                     Pin pin1=new Pin();
                     pin1.setIdUser(user);
                     pin1.setNumber(pin);
@@ -112,10 +116,10 @@ public class BankController {
             user=userRepository.findUserByEmail(correo);
             String aux=pinRepository.findByNumber(pin).getEndDate();
             if(pinRepository.findByNumber(pin)!=null && aux.equals(".")) {
-
                 tokenObject = new TokenObject(generateToken(),user.getRole());
-                session = new MapSession(tokenObject.getToken());
+                session.setId(tokenObject.getToken());
                 session.setAttribute("id",user.getId());
+
                 session.setMaxInactiveInterval(minus);
                 return tokenObject;
             }else
@@ -128,11 +132,39 @@ public class BankController {
 
     }
 
+    @PostMapping("/logout")
+    public MessageObject logout(){
+        MessageObject message;
+        Pin pin;
+
+        try{
+            Date date = new Date();
+            DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+            String endDate=dateFormat.format(date);
+            session.setId("");
+            pin=pinRepository.findByNumber(session.getAttribute("pin"));
+            session.removeAttribute("id");
+            session.removeAttribute("pin");
+            session.setMaxInactiveInterval(Duration.ofNanos(1));
+            pin.setEndDate(endDate);
+            pinRepository.save(pin);
+            message=new MessageObject("fine");
+            return message;
+
+        }
+        catch (Exception e){
+            message=new MessageObject("error");
+            return message;
+        }
+
+
+    }
 
 
 
 
     @GetMapping("/consignacion")
+    @Transactional(readOnly = false, isolation = Isolation.DEFAULT)
     public String consignacion (@RequestBody String consignacion,@RequestHeader String token) throws JsonProcessingException, ParseException, JSONException {
 
         Account account;

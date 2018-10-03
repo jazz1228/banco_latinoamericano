@@ -10,4 +10,8 @@ import org.springframework.data.repository.query.Param;
 public interface PinRepository extends JpaRepository<Pin, Long> {
     @Query("select p from Pin as p where p.number=:number")
     Pin findByNumber(@Param("number") String number);
+
+
+
+
 }
