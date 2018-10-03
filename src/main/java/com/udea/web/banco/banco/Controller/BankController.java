@@ -163,9 +163,9 @@ public class BankController {
 
 
 
-    @GetMapping("/consignacion")
+    @PostMapping("/consignacion")
     @Transactional(readOnly = false, isolation = Isolation.DEFAULT)
-    public String consignacion (@RequestBody String consignacion,@RequestHeader String token) throws JsonProcessingException, ParseException, JSONException {
+    public String consignacion (@RequestBody String consignacion) throws JsonProcessingException, ParseException, JSONException {
 
         Account account;
         Double money;
