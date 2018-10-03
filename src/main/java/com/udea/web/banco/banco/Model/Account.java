@@ -18,7 +18,6 @@ public class Account{
 
     private double balance;
     private String type;
-    private String status;
     private String pass;
 
     public String getNumber() {
@@ -43,14 +42,6 @@ public class Account{
 
     public void setType(String type) {
         this.type = type;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
     }
 
     public String getPass() {

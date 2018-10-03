@@ -9,4 +9,7 @@ import org.springframework.data.repository.query.Param;
 public interface AccountRepository extends JpaRepository<Account, Long> {
     @Query("select u from Account as u where u.number=:id")
     Account findByUid(@Param("id") String id);
+
+    @Query("select max(number) FROM Account")
+    String findLastAccount();
 }
