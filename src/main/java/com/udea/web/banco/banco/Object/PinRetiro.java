@@ -1,10 +1,10 @@
 package com.udea.web.banco.banco.Object;
 
-public class PinObject {
+public class PinRetiro {
 
     private String pin;
 
-    public PinObject(String pin) {
+    public PinRetiro(String pin) {
         this.pin = pin;
     }
 

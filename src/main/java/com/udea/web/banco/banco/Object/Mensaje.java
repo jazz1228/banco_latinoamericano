@@ -1,9 +1,9 @@
 package com.udea.web.banco.banco.Object;
 
-public class MessageObject {
+public class Mensaje {
 
     private String mensaje;
-    public MessageObject(String mensaje){
+    public Mensaje(String mensaje){
         this.mensaje=mensaje;
     }
 

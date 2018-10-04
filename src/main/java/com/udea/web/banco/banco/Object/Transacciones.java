@@ -1,22 +1,32 @@
 package com.udea.web.banco.banco.Object;
 
 public class Transacciones {
-    private String tipoTRansaccion;
+    private String tipoTransaccion;
     private double monto;
     private String fecha;
+    private String moneda;
 
-    public Transacciones(String tipoTRansaccion, double monto, String fecha) {
-        this.tipoTRansaccion = tipoTRansaccion;
+    public Transacciones(String tipoTransaccion, double monto, String fecha, String moneda) {
+        this.tipoTransaccion = tipoTransaccion;
         this.monto = monto;
         this.fecha = fecha;
+        this.moneda=moneda;
+    }
+
+    public String getMoneda() {
+        return moneda;
+    }
+
+    public void setMoneda(String moneda) {
+        this.moneda = moneda;
     }
 
     public String getTipoTRansaccion() {
-        return tipoTRansaccion;
+        return tipoTransaccion;
     }
 
     public void setTipoTRansaccion(String tipoTRansaccion) {
-        this.tipoTRansaccion = tipoTRansaccion;
+        this.tipoTransaccion = tipoTRansaccion;
     }
 
     public double getMonto() {
