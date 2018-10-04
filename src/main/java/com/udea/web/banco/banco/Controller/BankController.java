@@ -3,11 +3,15 @@ package com.udea.web.banco.banco.Controller;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+
 import com.udea.web.banco.banco.Model.*;
 import com.udea.web.banco.banco.Object.MessageObject;
-import com.udea.web.banco.banco.Object.PinObject;
+
 import com.udea.web.banco.banco.Object.TokenObject;
+import com.udea.web.banco.banco.Object.*;
+
 import com.udea.web.banco.banco.Repository.*;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +30,8 @@ import com.udea.web.banco.banco.Object.Cuenta;
 
 import java.util.List;
 import org.springframework.session.MapSession;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
@@ -48,7 +54,7 @@ public class BankController {
     UserRepository userRepository;
 
     //Manejar session desde el backEnd
-    MapSession session;
+    MapSession session=new MapSession("");
 
 
     @PostMapping("/logini")
@@ -73,6 +79,7 @@ public class BankController {
                 }
                     //Creo y guardo el pin en la base de datos
                     sendPin(pin, user.getPhone());
+                    session.setAttribute("pin",pin);
                     Pin pin1=new Pin();
                     pin1.setIdUser(user);
                     pin1.setNumber(pin);
@@ -85,13 +92,13 @@ public class BankController {
             }
 
             else{
-                MessageObject mensaje=new MessageObject(session.getId());
+                MessageObject mensaje=new MessageObject("error");
                 return mensaje;
             }
 
         }catch (Exception e){
 
-            MessageObject mensaje=new MessageObject(session.getId());
+            MessageObject mensaje=new MessageObject("error");
             return mensaje;
         }
     }
@@ -102,7 +109,7 @@ public class BankController {
         TokenObject tokenObject;
         try{
             User user;
-            Duration s=Duration.ofSeconds(2);
+            Duration minus=Duration.ofMinutes(5);
             JSONObject obj=new JSONObject(credentials);
             String correo=obj.getString("correo");
             String pin = obj.getString("pin");
@@ -110,8 +117,10 @@ public class BankController {
             String aux=pinRepository.findByNumber(pin).getEndDate();
             if(pinRepository.findByNumber(pin)!=null && aux.equals(".")) {
                 tokenObject = new TokenObject(generateToken(),user.getRole());
-                session = new MapSession(tokenObject.getToken());
-                session.setMaxInactiveInterval(s);
+                session.setId(tokenObject.getToken());
+                session.setAttribute("id",user.getId());
+
+                session.setMaxInactiveInterval(minus);
                 return tokenObject;
             }else
                 return tokenObject =new TokenObject("error","");
@@ -122,9 +131,40 @@ public class BankController {
 
     }
 
+    @PostMapping("/logout")
+    public MessageObject logout(){
+        MessageObject message;
+        Pin pin;
 
-    @GetMapping("/consignacion")
-    public String consignacion (@RequestBody String consignacion,@RequestHeader String token) throws JsonProcessingException, ParseException, JSONException {
+        try{
+            Date date = new Date();
+            DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+            String endDate=dateFormat.format(date);
+            session.setId("");
+            pin=pinRepository.findByNumber(session.getAttribute("pin"));
+            session.removeAttribute("id");
+            session.removeAttribute("pin");
+            session.setMaxInactiveInterval(Duration.ofNanos(1));
+            pin.setEndDate(endDate);
+            pinRepository.save(pin);
+            message=new MessageObject("fine");
+            return message;
+
+        }
+        catch (Exception e){
+            message=new MessageObject("error");
+            return message;
+        }
+
+
+    }
+
+
+
+
+    @PostMapping("/consignacion")
+    @Transactional(readOnly = false, isolation = Isolation.DEFAULT)
+    public String consignacion (@RequestBody String consignacion){
 
         Account account;
         Double money;
@@ -176,7 +216,7 @@ public class BankController {
     @PostMapping("/retiro")
     public String retiro (@RequestBody String retiro,@RequestHeader String token) throws JsonProcessingException, ParseException, JSONException {
 
-        String pinRetiro;
+        String pinRetiro = null;
         Account cuenta;
         Double money;
         User usuario;
@@ -205,8 +245,6 @@ public class BankController {
                 cuenta.setBalance(saldo-money);
                 pinRetiro = generatePin("retiro");
                 accountRepository.save(cuenta);
-            } else{
-                return "saldo insuficiente";
             }
 
             //Guardar transaccion
@@ -220,6 +258,68 @@ public class BankController {
             transaction.setCoin(monedaUsuario);
             transactionRepository.save(transaction);
             return pinRetiro;
+        }catch (Exception e){
+            return "Fallo";
+        }
+
+    }
+
+    @PostMapping("/transferencia")
+    @Transactional(readOnly = false, isolation = Isolation.DEFAULT)
+    public String transferencia (@RequestBody String consignacion){
+
+        Account accountOrigen;
+        Account accountDestino;
+        Double money;
+        User usuario;
+        String monedaOrigen;
+        String monedaDestino;
+
+        try {
+            JSONObject obj=new JSONObject(consignacion);
+
+            //Conversion a Json a java
+            String cedula=session.getAttribute("id");
+            String cuentaDestino = obj.getString("cuentaDestino");
+            Double monto = obj.getDouble("monto");
+            String moneda = obj.getString("moneda");
+
+
+            //Obtengo este usuario
+            usuario= userRepository.findByUid(cedula);
+            //Obtengo la cuenta de origen
+            accountOrigen=usuario.getNumberAccount();
+            //Obtengo la cuenta de destino
+            accountDestino=accountRepository.findByUid(cuentaDestino);
+
+            monedaOrigen=usuario.getCountry().getCoin();
+            monedaDestino=userRepository.findByNumberAccount(accountDestino).getCountry().getCoin();
+            money = this.convertMoney(monto,moneda,monedaOrigen);
+            //Validaciones
+            double saldo = accountOrigen.getBalance();
+            if(saldo>=money){
+                accountOrigen.setBalance(saldo-money);
+                accountRepository.save(accountOrigen);
+            } else{
+                return "saldo insuficiente";
+            }
+            money = this.convertMoney(monto,moneda,monedaDestino);
+            accountDestino.setBalance(money+accountDestino.getBalance());
+            accountRepository.save(accountDestino);
+
+            //Guardar transaccion
+            Transaction transaction = new Transaction();
+            transaction.setAccount(accountOrigen.getNumber());
+            transaction.setFinalAccount(accountDestino);
+            Date fecha = new Date();
+            DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+            transaction.setDate(dateFormat.format(fecha));
+            transaction.setType("TRANSFERENCIA");
+            transaction.setAmount(monto);
+            transaction.setCoin(moneda);
+            transactionRepository.save(transaction);
+            return "Exitoso";
+
         }catch (Exception e){
             return "Fallo";
         }
@@ -318,6 +418,7 @@ public class BankController {
         max = Integer.toString(newAccount);
         return max;
     }
+            
 
     public  Double convertMoney(Double monto, String monedaOrigen, String monedaDestino ){
         return monto;
@@ -334,16 +435,16 @@ public class BankController {
         String random1 = Long.toString(longToken,1021202322);
         return random1;
     }
-
     public String generatePin(String tipo){
         Random rgn = new Random();
         int num;
-        if(tipo.equals("ingreso")) {
+        if(tipo.equals("ingreso")){
             num=1000;
-        } else{
+
+        }else{
             num=10000;
         }
-        int digi = rgn.nextInt(9000) + num;
+        int digi=rgn.nextInt(9000)+num;
         return Integer.toString(digi);
     }
 
@@ -375,5 +476,48 @@ public class BankController {
             System.out.println("Error SMS "+e);
             return "Error "+e;
         }
+    }
+
+    @PostMapping("/buscaPorCuenta")
+    @Transactional(readOnly = false, isolation = Isolation.DEFAULT)
+    public Historial buscaPorCuenta(@RequestBody String cuenta){
+
+        Account account;
+        User usuario;
+        Historial historial;
+
+        try {
+            JSONObject obj=new JSONObject(cuenta);
+
+            //Conversion a Json a java
+            String numeroCuenta=obj.getString("numeroCuenta");
+
+            account=accountRepository.findByUid(numeroCuenta);
+            usuario= userRepository.findByNumberAccount(account);
+
+            historial = new Historial(usuario.getId());
+            historial.setNombre(usuario.getName());
+            historial.setFecha(usuario.getBirthDay());
+            historial.setTelefono(usuario.getPhone());
+            historial.setDireccion(usuario.getAddress());
+            historial.setPais(usuario.getCountry().getName());
+            historial.setCorreo(usuario.getEmail());
+            historial.setTipo(account.getType());
+            historial.setSaldo(account.getBalance());
+
+            List<Transaction> tran;
+            List<Transacciones> aux1= new ArrayList<Transacciones>();
+            tran=transactionRepository.findAllByAccount(numeroCuenta);
+
+            for(Transaction t:tran){
+                Transacciones transac=new Transacciones(t.getType(),t.getAmount(),t.getDate());
+                aux1.add(transac);
+            }
+            historial.setTransacciones(aux1);
+            return historial;
+        }catch (Exception e){
+            return null;
+        }
+
     }
 }
