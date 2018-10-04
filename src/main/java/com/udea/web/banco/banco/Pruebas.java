@@ -1,29 +1,48 @@
 package com.udea.web.banco.banco;
 
-import org.springframework.session.MapSession;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONObject;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Date;
-import java.util.Map;
+import java.io.IOException;
 
-public class Pruebas {
-    public static void main(String arg []){
-        Date date = new Date();
+public class Pruebas
+{
+    public float getConversionRate(String from, String to) throws IOException
+    {
 
-        MapSession session=new MapSession("12413423rddfd");
-        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-        String startDate=dateFormat.format(date);
-        Duration s = Duration.ofMinutes(5);
-        Instant t1, t2;
-        t1=Instant.now();
-       // System.out.println(t1.);
-        session.setAttribute("id","juancho");
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        HttpPost get = new HttpPost("http://api.cambio.today/v1/quotes/EUR/USD/json?quantity=1&key=286|FXQk~MZrd_QW6a*6ZGNv1c3~^LZ08i03");
+        try {
 
-        session.setMaxInactiveInterval(Duration.ofSeconds(5));
-        System.out.println(session.getMaxInactiveInterval());
+            CloseableHttpResponse response =  httpClient.execute(get);
+           // HttpEntity entity = response.getEntity();
+            //JSONObject exchangeRates = new JSONObject(EntityUtils.toString(entity));
+            System.out.println("hola");
+            //System.out.println(exchangeRates.getString("result")+"hola");
+            /* HttpGet httpGet = new HttpGet("https://api.cambio.today/v1/quotes/EUR/USD/json?quantity=1&key=286|FXQk~MZrd_QW6a*6ZGNv1c3~^LZ08i03");
+            ResponseHandler<String> responseHandler = new BasicResponseHandler();
+            httpGet.
+            String responseBody = httpclient.execute(httpGet, responseHandler);*/
+
+            return (float) 1.212;
+        }catch (Exception e){
+            return (float) 1.21;
+        }
     }
 
+    public static void main(String[] arguments) throws IOException
+    {
+        Pruebas yahooCurrencyConverter = new Pruebas();
+        float current = yahooCurrencyConverter.getConversionRate("USD", "ILS");
+        System.out.println(current);
+    }
 }

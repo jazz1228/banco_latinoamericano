@@ -7,9 +7,7 @@ import com.udea.web.banco.banco.Model.Account;
 import com.udea.web.banco.banco.Model.Pin;
 import com.udea.web.banco.banco.Model.Transaction;
 import com.udea.web.banco.banco.Model.User;
-import com.udea.web.banco.banco.Object.MessageObject;
-import com.udea.web.banco.banco.Object.PinObject;
-import com.udea.web.banco.banco.Object.TokenObject;
+import com.udea.web.banco.banco.Object.*;
 import com.udea.web.banco.banco.Repository.*;
 import org.hibernate.query.criteria.internal.expression.MapEntryExpression;
 import org.json.JSONException;
@@ -21,8 +19,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.SecureRandom;
-import java.time.Instant;
-import java.util.Date;
+import java.util.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
@@ -35,8 +32,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
 import java.time.Duration;
-import java.util.Map;
-import java.util.Random;
 
 @RestController
 @RequestMapping("/v1/bank")
@@ -165,7 +160,7 @@ public class BankController {
 
     @PostMapping("/consignacion")
     @Transactional(readOnly = false, isolation = Isolation.DEFAULT)
-    public String consignacion (@RequestBody String consignacion) throws JsonProcessingException, ParseException, JSONException {
+    public String consignacion (@RequestBody String consignacion){
 
         Account account;
         Double money;
@@ -206,6 +201,68 @@ public class BankController {
             transaction.setType("CONSIGNACION");
             transaction.setAmount(money);
             transaction.setCoin(monedaDestino);
+            transactionRepository.save(transaction);
+            return "Exitoso";
+        }catch (Exception e){
+            return "Fallo";
+        }
+
+    }
+
+    @PostMapping("/transferecnia")
+    @Transactional(readOnly = false, isolation = Isolation.DEFAULT)
+    public String transferencia (@RequestBody String consignacion){
+
+        Account accountOrigen;
+        Account accountDestino;
+        Double money;
+        User usuario;
+        String monedaOrigen;
+        String monedaDestino;
+
+        try {
+            JSONObject obj=new JSONObject(consignacion);
+
+            //Conversion a Json a java
+            String cedula=session.getAttribute("id");
+            String cuentaDestino = obj.getString("cuentaDestino");
+            Double monto = obj.getDouble("monto");
+            String moneda = obj.getString("moneda");
+
+
+            //Obtengo este usuario
+            usuario= userRepository.findByUid(cedula);
+            //Obtengo la cuenta de origen
+            accountOrigen=usuario.getNumberAccount();
+            //Obtengo la cuenta de destino
+            accountDestino=accountRepository.findByUid(cuentaDestino);
+
+            monedaOrigen=usuario.getCountry().getCoin();
+            monedaDestino=userRepository.findByNumberAccount(accountDestino).getCountry().getCoin();
+            money = this.convertMoney(monto,moneda,monedaOrigen);
+            //Validaciones
+            double saldo = accountOrigen.getBalance();
+            if(saldo>=money){
+                accountOrigen.setBalance(saldo-money);
+                accountRepository.save(accountOrigen);
+            } else{
+                return "saldo insuficiente";
+            }
+
+            money = this.convertMoney(monto,moneda,monedaDestino);
+            accountDestino.setBalance(money+accountDestino.getBalance());
+            accountRepository.save(accountDestino);
+
+            //Guardar transaccion
+            Transaction transaction = new Transaction();
+            transaction.setAccount(accountOrigen.getNumber());
+            transaction.setFinalAccount(accountDestino);
+            Date fecha = new Date();
+            DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+            transaction.setDate(dateFormat.format(fecha));
+            transaction.setType("TRANSFERENCIA");
+            transaction.setAmount(monto);
+            transaction.setCoin(moneda);
             transactionRepository.save(transaction);
             return "Exitoso";
         }catch (Exception e){
@@ -270,5 +327,48 @@ public class BankController {
             System.out.println("Error SMS "+e);
             return "Error "+e;
         }
+    }
+
+    @PostMapping("/buscaPorCuenta")
+    @Transactional(readOnly = false, isolation = Isolation.DEFAULT)
+    public Historial buscaPorCuenta(@RequestBody String cuenta){
+
+        Account account;
+        User usuario;
+        Historial historial;
+
+        try {
+            JSONObject obj=new JSONObject(cuenta);
+
+            //Conversion a Json a java
+            String numeroCuenta=obj.getString("numeroCuenta");
+
+            account=accountRepository.findByUid(numeroCuenta);
+            usuario= userRepository.findByNumberAccount(account);
+
+            historial = new Historial(usuario.getId());
+            historial.setNombre(usuario.getName());
+            historial.setFecha(usuario.getBirthDay());
+            historial.setTelefono(usuario.getPhone());
+            historial.setDireccion(usuario.getAddress());
+            historial.setPais(usuario.getCountry().getName());
+            historial.setCorreo(usuario.getEmail());
+            historial.setTipo(account.getType());
+            historial.setSaldo(account.getBalance());
+
+            List<Transaction> tran;
+            List<Transacciones> aux1= new ArrayList<Transacciones>();
+            tran=transactionRepository.findAllByAccount(numeroCuenta);
+
+            for(Transaction t:tran){
+                Transacciones transac=new Transacciones(t.getType(),t.getAmount(),t.getDate());
+                aux1.add(transac);
+            }
+            historial.setTransacciones(aux1);
+            return historial;
+        }catch (Exception e){
+            return null;
+        }
+
     }
 }
