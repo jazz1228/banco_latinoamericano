@@ -421,7 +421,41 @@ public class BankController {
             
 
     public  Double convertMoney(Double monto, String monedaOrigen, String monedaDestino ){
-        return monto;
+        Double resultado = null;
+        Double conversor = null;
+        String valorString=String.valueOf(valor);;
+        String url = "https://api.cambio.today/v1/quotes/"+MonedaOrigen+"/"+MonedaDestino+"/json?quantity=1&key=286|FXQk~MZrd_QW6a*6ZGNv1c3~^LZ08i03";
+        URL obj = new URL(url);
+        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+        // optional default is GET
+        con.setRequestMethod("GET");
+        //add request header
+        con.setRequestProperty("User-Agent", "Mozilla/5.0");
+        int responseCode = con.getResponseCode();
+        System.out.println("\nSending 'GET' request to URL : " + url);
+        System.out.println("Response Code : " + responseCode);
+        BufferedReader in = new BufferedReader(
+                new InputStreamReader(con.getInputStream()));
+        String inputLine;
+        StringBuffer response = new StringBuffer();
+        while ((inputLine = in.readLine()) != null) {
+            response.append(inputLine);
+        }
+        in.close();
+        //print in String
+        System.out.println(response.toString());
+        //Read JSON response and print
+        JSONObject myResponse = new JSONObject(response.toString());
+
+        System.out.println(myResponse.getJSONObject("result").toString());
+        JSONObject resul = myResponse.getJSONObject("result");
+
+        conversor = resul.getDouble("value");
+
+        resultado= conversor*valor;
+
+        System.out.println(resultado);
+        return resultado;
     }
 
     public boolean validateToken(String token){
