@@ -1,22 +1,26 @@
 package com.udea.web.banco.banco;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.BasicResponseHandler;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
-import org.json.JSONObject;
 
+import org.apache.catalina.WebResource;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.springframework.web.client.RestTemplate;
+
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class Pruebas
+
+
 {
-    public float getConversionRate(String from, String to) throws IOException
+
+   /* public float getConversionRate(String from, String to) throws IOException
     {
 
         CloseableHttpClient httpClient = HttpClients.createDefault();
@@ -33,16 +37,20 @@ public class Pruebas
             httpGet.
             String responseBody = httpclient.execute(httpGet, responseHandler);*/
 
-            return (float) 1.212;
+            /*return (float) 1.212;
         }catch (Exception e){
             return (float) 1.21;
         }
-    }
+    }*/
 
-    public static void main(String[] arguments) throws IOException
-    {
-        Pruebas yahooCurrencyConverter = new Pruebas();
-        float current = yahooCurrencyConverter.getConversionRate("USD", "ILS");
-        System.out.println(current);
+    public static void main(String[] arguments) throws IOException, URISyntaxException {
+
+        RestTemplate restTemplate = new RestTemplate();
+        Response geoIPXml=null;
+        geoIPXml = restTemplate.getForObject(new URI("http://api.cambio.today/v1/quotes/USD/COP/json?quantity=1&key=286|FXQk~MZrd_QW6a*6ZGNv1c3~^LZ08i03") , Response.class);
+
+
+
+
     }
 }

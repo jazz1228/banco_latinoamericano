@@ -17,8 +17,11 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -420,7 +423,7 @@ public class BankController {
     }
             
 
-    public  Double convertMoney(Double monto, String monedaOrigen, String monedaDestino ){
+    public  Double convertMoney(Double valor, String MonedaOrigen, String MonedaDestino ) throws IOException, JSONException {
         Double resultado = null;
         Double conversor = null;
         String valorString=String.valueOf(valor);;
