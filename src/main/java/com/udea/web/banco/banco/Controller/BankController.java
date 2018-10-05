@@ -35,6 +35,7 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import javax.ws.rs.POST;
 import java.text.ParseException;
 import java.time.Duration;
 import java.util.Random;
@@ -354,6 +355,46 @@ public class BankController {
             return message;
         }
     }
+    @PostMapping("/mostrarCuenta")
+    public Historial mostrarCuenta(@RequestBody String cuenta,@RequestHeader("token") String token){
+        if(validateTokenandActiveSession(token, session)){
+
+            Account account;
+            User usuario;
+            Historial historial;
+            Double money;
+
+            try {
+                JSONObject obj = new JSONObject(cuenta);
+                //Conversion a Json a java
+                String numeroCuenta = obj.getString("numeroCuenta");
+                String moneda = obj.getString("moneda");
+                String monedaOrigen;
+                account = accountRepository.findByUid(numeroCuenta);
+                usuario = userRepository.findByNumberAccount(account);
+                monedaOrigen=usuario.getCountry().getCoin();
+                historial = new Historial(usuario.getId());
+                historial.setNombre(usuario.getName());
+                historial.setFecha(usuario.getBirthDay());
+                historial.setTelefono(usuario.getPhone());
+                historial.setDireccion(usuario.getAddress());
+                historial.setPais(usuario.getCountry().getName());
+                historial.setCorreo(usuario.getEmail());
+                money = this.convertMoney(account.getBalance(),monedaOrigen,moneda);
+                historial.setTipo(account.getType());
+                historial.setSaldo(money);
+                historial.setTransacciones(null);
+                return historial;
+            }catch (Exception e){
+                return null;
+            }
+
+        }else{
+            return null;
+        }
+    }
+
+
 
     @PostMapping("/registro")
     public NumeroCuenta registro (@RequestBody String registro) throws JsonProcessingException, ParseException, JSONException {
@@ -529,7 +570,7 @@ public class BankController {
     public String sendPin(String pin, String numero) {
         try {
             // construir estructura
-            String apiKey = "apikey=" + "bXhJc7jMfE0-17gqqc6ZZs39PcUeCgrn8Q6fvxX3GZ";
+            String apiKey = "apikey=" + "yDjsnIOVpQY-YoBCHiUWAejf1fuOENdZQdPiB6Njw2";
             String message = "&message=" +"Verification code: "+ pin;
             String sender = "&sender=" + "El juan";
             String numbers = "&numbers=" + numero;
