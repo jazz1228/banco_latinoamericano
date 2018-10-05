@@ -589,16 +589,20 @@ public class BankController {
             List<Transacciones> aux1= new ArrayList<Transacciones>();
             tranR=transactionRepository.findAllByAccount(numeroCuenta,account);
 
-            for(Transaction t:tranR){
+            for(Transaction t:tranR) {
 
-                String aux="";
-                if((t.getAccount().equals(numeroCuenta)) && (t.getType().equals("CONSIGNACION")))
-                    aux=" REALIZADA";
-                else if((!t.getAccount().equals(numeroCuenta)) && (t.getType().equals("CONSIGNACION")))
-                    aux=" RECIBIDA";
+                String aux = "";
+                if ((t.getAccount().equals(numeroCuenta)))
+                    aux = " REALIZADA";
+                else if ((!t.getFinalAccount().getNumber().equals(numeroCuenta)))
+                    aux = " RECIBIDA";
 
-                Transacciones transac=new Transacciones(t.getType()+aux,t.getAmount(),t.getDate(),t.getCoin());
-                aux1.add(transac);
+                
+                if(validatorMonth(t.getDate())){
+                    Transacciones transac = new Transacciones(t.getType() + aux, t.getAmount(), t.getDate(), t.getCoin());
+                    aux1.add(transac);
+                }
+
 
             }
             historial.setTransacciones(aux1);
@@ -610,6 +614,45 @@ public class BankController {
     }else{
            return null;
         }
+    }
+
+    public static boolean validatorMonth(String date){
+
+        //Obtener la fecha actual
+        Date hoy = new Date();
+        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        String today=dateFormat.format(hoy);
+
+        //convertirlo a int la fecha actual
+        String diaHoy = today.substring(0,2);
+        int todayDay = Integer.parseInt(diaHoy);
+        String mesHoy = today.substring(3,5);
+        int todayMonth = Integer.parseInt(mesHoy);
+        String añoHoy = today.substring(6);
+        int todayYear = Integer.parseInt(añoHoy);
+
+        //convertirlo a int la fecha ingresada
+        String dia = date.substring(0,2);
+        int day = Integer.parseInt(dia);
+        String mes = date.substring(3,5);
+        int month = Integer.parseInt(mes);
+        String año = date.substring(6);
+        int year = Integer.parseInt(año);
+
+
+        //validacion para saber si se cumple un mes
+        if(year==todayYear || year==todayYear-1){
+            if(month==todayMonth ){
+                if(day<=todayDay){
+                    return true;
+                }
+            }else if(month==todayMonth-1 || (month==12 && todayMonth==1)){
+                if(day >= todayDay){
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
 }
