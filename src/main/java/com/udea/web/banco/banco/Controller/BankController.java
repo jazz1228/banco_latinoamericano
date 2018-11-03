@@ -40,6 +40,7 @@ import java.text.ParseException;
 import java.time.Duration;
 import java.util.Random;
 
+@CrossOrigin(origins = "*",maxAge = 3600)
 @RestController
 @RequestMapping("/v1/bank")
 public class BankController {
