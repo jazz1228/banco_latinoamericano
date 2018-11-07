@@ -81,7 +81,7 @@ public class BankController {
                     pin =generatePin("ingreso");
                 }
                     //Creo y guardo el pin en la base de datos
-                    //sendPin(pin, user.getPhone());
+                    sendPin(pin, user.getPhone());
                     session.setAttribute("pin",pin);
                     Pin pin1=new Pin();
                     pin1.setIdUser(user);
