@@ -415,6 +415,8 @@ public class BankController {
 
         try {
             JSONObject obj=new JSONObject(registro);
+            User usr1;
+            User usr2;
 
             //Json a java
             id = obj.getString("id");
@@ -428,6 +430,12 @@ public class BankController {
             tipoCuenta = obj.getString("tipoCuenta");
             passAccount = obj.getString("passwordCuenta");
             Country pais = countryRepository.findByName(country);
+
+            usr1 = userRepository.findUserByEmail(email);
+            usr2 = userRepository.findByUid(id);
+            if(usr1 != null || usr2 != null){
+                return "Fallo";
+            }
 
             numberAccount = createNumberAccount();
 
