@@ -1,7 +1,5 @@
 package com.udea.web.banco.banco.Object;
 
-import com.udea.web.banco.banco.Model.Transaction;
-
 import java.util.List;
 
 public class Historial {

@@ -1,37 +1,36 @@
-package com.udea.web.banco.banco.Model;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import javax.persistence.*;
+package com.udea.web.banco.banco.ModelMONGO;
 
 
-@Entity
-@Table(name = "user")
-@EntityListeners(AuditingEntityListener.class)
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class User {
+import com.udea.web.banco.banco.ModelMONGO.Account;
+import com.udea.web.banco.banco.ModelMONGO.Country;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.io.Serializable;
+
+
+@Document(collection = "User")
+public class User implements Serializable {
     @Id
+    private Object iden;
     private String id;
-
     private String name;
     private String pass;
-
     private String birthDay;
     private String phone;
     private String address;
-
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = Country.class)
-    @JoinColumn(name="country")
     private Country country;
-
-    @OneToOne(fetch = FetchType.LAZY, targetEntity = Account.class)
-    @JoinColumn(name="numberAccount")
     private Account numberAccount;
-
     private String email;
     private String role;
+
+    public Object getIden() {
+        return iden;
+    }
+
+    public void setIden(Object iden) {
+        this.iden = iden;
+    }
 
     public Account getNumberAccount() {
         return numberAccount;

@@ -1,24 +1,27 @@
-package com.udea.web.banco.banco.Model;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.springframework.context.annotation.Primary;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+package com.udea.web.banco.banco.ModelMONGO;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 import java.io.Serializable;
 
-@Entity
-@Table(name = "account")
-@EntityListeners(AuditingEntityListener.class)
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class Account{
+@Document(collection = "Account")
+public class Account implements Serializable {
 
     @Id
+    private Object id;
     private String number;
-
     private double balance;
     private String type;
     private String pass;
+
+    public Object getId() {
+        return id;
+    }
+
+    public void setId(Object id) {
+        this.id = id;
+    }
 
     public String getNumber() {
         return number;

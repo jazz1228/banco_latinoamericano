@@ -1,30 +1,20 @@
-package com.udea.web.banco.banco.Model;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+package com.udea.web.banco.banco.ModelMONGO;
 
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serializable;
 
-@Entity
-@Table(name = "pin")
-@EntityListeners(AuditingEntityListener.class)
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Document(collection = "pin")
 public class Pin implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
-
-
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = User.class)
-    @JoinColumn(name="idUser")
     private User idUser;
-
     private String number;
     private String startDate;
-    private String endDate; //Discutir si mas bien se usa un estatus para el pin
+    private String endDate;
 
     public int getId() {
         return id;

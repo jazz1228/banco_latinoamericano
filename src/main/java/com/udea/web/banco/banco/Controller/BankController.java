@@ -4,14 +4,15 @@ package com.udea.web.banco.banco.Controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import com.udea.web.banco.banco.Model.*;
+import com.udea.web.banco.banco.ModelMONGO.*;
 import com.udea.web.banco.banco.Object.Mensaje;
 
 import com.udea.web.banco.banco.Object.TokenObject;
 import com.udea.web.banco.banco.Object.*;
 
-import com.udea.web.banco.banco.Repository.*;
+import com.udea.web.banco.banco.RepositoryMongo.*;
 
+import org.bson.types.ObjectId;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +36,6 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import javax.ws.rs.POST;
 import java.text.ParseException;
 import java.time.Duration;
 import java.util.Random;
@@ -56,15 +56,18 @@ public class BankController {
     @Autowired
     UserRepository userRepository;
 
+    private final int NUMBER=1000000000;
+    private final int BOUND=900000000;
+
     //Manejar session desde el backEnd
     MapSession session=new MapSession("");
 
 
     @PostMapping("/logini")
-    public Mensaje logini(@RequestBody String credentials){
+    public Mensaje logini(@RequestBody String credentials) throws JSONException {
 
         User user=null;
-        try {
+
             JSONObject obj=new JSONObject(credentials);
             String correo=obj.getString("correo");
             String contrasena = obj.getString("contrasena");
@@ -99,11 +102,7 @@ public class BankController {
                 return mensaje;
             }
 
-        }catch (Exception e){
 
-            Mensaje mensaje=new Mensaje("error");
-            return mensaje;
-        }
     }
 
 
@@ -444,6 +443,7 @@ public class BankController {
             cuenta.setBalance(0);
             cuenta.setPass(passAccount);
             cuenta.setType(tipoCuenta);
+            cuenta.setId(ObjectId.get());
             accountRepository.save(cuenta);
 
             //Crear usuario
@@ -458,6 +458,7 @@ public class BankController {
             usuario.setEmail(email);
             usuario.setRole("cliente");
             usuario.setNumberAccount(cuenta);
+            usuario.setIden(ObjectId.get());
             userRepository.save(usuario);
 
             numeroCuenta=new NumeroCuenta(numberAccount);
@@ -497,13 +498,35 @@ public class BankController {
     }
 
     public String createNumberAccount(){
-        String max = accountRepository.findLastAccount();
+        String max = findLastAccount();
         int newAccount = Integer.parseInt(max);
         newAccount++;
         max = Integer.toString(newAccount);
         return max;
     }
-            
+
+
+    public String findLastAccount(){
+
+        Random rgn = new Random();
+        String numberToString;
+        int digito=rgn.nextInt(BOUND)+NUMBER;
+        numberToString=Integer.toString(digito);
+        while(existAccount(numberToString))
+        {
+            digito=rgn.nextInt(BOUND)+NUMBER;
+            numberToString=Integer.toString(digito);
+        }
+
+        return numberToString;
+
+    }
+
+
+    public boolean existAccount(String account){
+        return accountRepository.findByUid(account)!=null;
+    }
+
 
     public  Double convertMoney(Double valor, String MonedaOrigen, String MonedaDestino ) throws IOException, JSONException {
         Double resultado = null;
