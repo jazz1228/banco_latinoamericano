@@ -1,4 +1,4 @@
-package com.udea.web.banco.banco.Object;
+package com.udea.web.banco.banco.BankDTO;
 
 public class Mensaje {
 
