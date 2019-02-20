@@ -79,7 +79,7 @@ public class BankController {
                 Date date = new Date();
                 DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
                 String startDate=dateFormat.format(date);
-                while(pinRepository.findByNumber(pin)!=null){
+                while(pinRepository.findPinByNumber(pin)!=null){
                     //Genero pin y envio al celular del user
                     pin =generatePin("ingreso");
                 }
@@ -118,8 +118,8 @@ public class BankController {
             String correo=obj.getString("correo");
             String pin = obj.getString("pin");
             user=userRepository.findUserByEmail(correo);
-            String aux=pinRepository.findByNumber(pin).getEndDate();
-            if(pinRepository.findByNumber(pin)!=null && aux.equals(".")) {
+            String aux=pinRepository.findPinByNumber(pin).getEndDate();
+            if(pinRepository.findPinByNumber(pin)!=null && aux.equals(".")) {
                 tokenObject = new TokenObject(generateToken(),user.getRole());
                 session.setId(tokenObject.getToken());
                 session.setAttribute("id",user.getId());
@@ -147,7 +147,7 @@ public class BankController {
                 DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
                 String endDate = dateFormat.format(date);
                 session.setId("");
-                pin = pinRepository.findByNumber(session.getAttribute("pin"));
+                pin = pinRepository.findPinByNumber(session.getAttribute("pin"));
                 session.removeAttribute("id");
                 session.removeAttribute("pin");
                 session.removeAttribute("rol");
@@ -188,7 +188,7 @@ public class BankController {
                 Double monto = obj.getDouble("monto");
                 String moneda = obj.getString("moneda");
 
-                account = accountRepository.findByUid(cuentaDestino);
+                account = accountRepository.findAccountByNumber(cuentaDestino);
 
                 //Conversion de moneda y cambio en cuenta
                 usuario = userRepository.findByNumberAccount(account);
@@ -316,7 +316,7 @@ public class BankController {
             //Obtengo la cuenta de origen
             accountOrigen=usuario.getNumberAccount();
             //Obtengo la cuenta de destino
-            accountDestino=accountRepository.findByUid(cuentaDestino);
+            accountDestino=accountRepository.findAccountByNumber(cuentaDestino);
 
             monedaOrigen=usuario.getCountry().getCoin();
             monedaDestino=userRepository.findByNumberAccount(accountDestino).getCountry().getCoin();
@@ -372,7 +372,7 @@ public class BankController {
                 String numeroCuenta = obj.getString("numeroCuenta");
                 String moneda = obj.getString("moneda");
                 String monedaOrigen;
-                account = accountRepository.findByUid(numeroCuenta);
+                account = accountRepository.findAccountByNumber(numeroCuenta);
                 usuario = userRepository.findByNumberAccount(account);
                 monedaOrigen=usuario.getCountry().getCoin();
                 historial = new Historial(usuario.getId());
@@ -429,7 +429,8 @@ public class BankController {
             email = obj.getString("correo");
             tipoCuenta = obj.getString("tipoCuenta");
             passAccount = obj.getString("passwordCuenta");
-            Country pais = countryRepository.findByName(country);
+            Country pais = countryRepository.findCountryByCoin(country);
+
 
             usr1 = userRepository.findUserByEmail(email);
             usr2 = userRepository.findByUid(id);
@@ -526,7 +527,7 @@ public class BankController {
 
 
     public boolean existAccount(String account){
-        return accountRepository.findByUid(account)!=null;
+        return accountRepository.findAccountByNumber(account)!=null;
     }
 
 
@@ -645,7 +646,7 @@ public class BankController {
             //Conversion a Json a java
             String numeroCuenta=obj.getString("numeroCuenta");
 
-            account=accountRepository.findByUid(numeroCuenta);
+            account=accountRepository.findAccountByNumber(numeroCuenta);
             usuario= userRepository.findByNumberAccount(account);
 
             historial = new Historial(usuario.getId());
