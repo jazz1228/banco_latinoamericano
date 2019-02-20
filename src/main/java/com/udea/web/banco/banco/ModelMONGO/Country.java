@@ -12,6 +12,9 @@ public class Country implements Serializable {
     private Object id;
     private String name;
     private String coin;
+    private String code;
+
+
 
     public Object getId() {
         return id;
@@ -37,5 +40,12 @@ public class Country implements Serializable {
         this.coin = coin;
     }
 
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
 }
 
