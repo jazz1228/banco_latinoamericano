@@ -9,6 +9,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CountryRepository extends MongoRepository<Country, String> {
-    @Query("{'name':?0}")
+
     Country findByName(String name);
 }
