@@ -116,7 +116,7 @@ public class BankController {
             Duration minus=Duration.ofMinutes(5);
             JSONObject obj=new JSONObject(credentials);
             String correo=obj.getString("correo");
-            String pin = obj.getString("pin");
+            String pin = obj.getString("sms");
             user=userRepository.findUserByEmail(correo);
             String aux=pinRepository.findPinByNumber(pin).getEndDate();
             if(pinRepository.findPinByNumber(pin)!=null && aux.equals(".")) {
