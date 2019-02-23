@@ -359,22 +359,19 @@ public class BankController {
         }
     }
     @PostMapping("/mostrarCuenta")
-    public Historial mostrarCuenta(@RequestBody String cuenta,@RequestHeader("token") String token){
+    public Historial mostrarCuenta(@RequestBody String coinCode,@RequestHeader("token") String token){
         if(validateTokenandActiveSession(token, session)){
 
-            Account account;
+
             User usuario;
             Historial historial;
             Double money;
 
             try {
-                JSONObject obj = new JSONObject(cuenta);
-                //Conversion a Json a java
-                String numeroCuenta = obj.getString("numeroCuenta");
+                JSONObject obj = new JSONObject(coinCode);
                 String moneda = obj.getString("moneda");
                 String monedaOrigen;
-                account = accountRepository.findAccountByNumber(numeroCuenta);
-                usuario = userRepository.findByNumberAccount(account);
+                usuario = userRepository.findByUid(session.getAttribute("id"));
                 monedaOrigen=usuario.getCountry().getCoin();
                 historial = new Historial(usuario.getId());
                 historial.setNombre(usuario.getName());
@@ -383,8 +380,8 @@ public class BankController {
                 historial.setDireccion(usuario.getAddress());
                 historial.setPais(usuario.getCountry().getName());
                 historial.setCorreo(usuario.getEmail());
-                money = this.convertMoney(account.getBalance(),monedaOrigen,moneda);
-                historial.setTipo(account.getType());
+                money = this.convertMoney(usuario.getNumberAccount().getBalance(),monedaOrigen,moneda);
+                historial.setTipo(usuario.getNumberAccount().getType());
                 historial.setSaldo(money);
                 historial.setTransacciones(null);
                 return historial;
