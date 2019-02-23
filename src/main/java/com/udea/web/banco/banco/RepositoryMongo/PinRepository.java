@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 
 
 @Repository
-public interface PinRepository extends MongoRepository<Pin, Integer> {
+public interface PinRepository extends MongoRepository<Pin, Object> {
 
 
     Pin findPinByNumber(String number);

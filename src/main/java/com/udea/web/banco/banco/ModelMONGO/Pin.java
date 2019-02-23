@@ -10,17 +10,17 @@ import java.io.Serializable;
 public class Pin implements Serializable {
 
     @Id
-    private int id;
+    private Object id;
     private User idUser;
     private String number;
     private String startDate;
     private String endDate;
 
-    public int getId() {
+    public Object getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Object id) {
         this.id = id;
     }
 

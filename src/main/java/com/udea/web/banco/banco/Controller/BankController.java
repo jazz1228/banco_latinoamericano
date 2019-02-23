@@ -89,6 +89,7 @@ public class BankController {
                     //sendPin(pin, countryNumberCode+user.getPhone());
                     session.setAttribute("pin",pin);
                     Pin pin1=new Pin();
+                    pin1.setId(ObjectId.get());
                     pin1.setIdUser(user);
                     pin1.setNumber(pin);
                     pin1.setStartDate(startDate);
