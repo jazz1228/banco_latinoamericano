@@ -79,21 +79,21 @@ public class BankController {
                 Date date = new Date();
                 DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
                 String startDate=dateFormat.format(date);
-                /*while(pinRepository.findPinByNumber(pin)!=null){
+                while(pinRepository.findPinByNumber(pin)!=null){
                     //Genero pin y envio al celular del user
                     pin =generatePin("ingreso");
-                }*/
+                }
                     String countryNumberCode= user.getCountry().getCode();
 
                     //Creo y guardo el pin en la base de datos
-                    /*sendPin(pin, countryNumberCode+user.getPhone());
+                    //sendPin(pin, countryNumberCode+user.getPhone());
                     session.setAttribute("pin",pin);
                     Pin pin1=new Pin();
                     pin1.setIdUser(user);
                     pin1.setNumber(pin);
                     pin1.setStartDate(startDate);
                     pin1.setEndDate(".");
-                    pinRepository.save(pin1);*/
+                    pinRepository.save(pin1);
                     Mensaje mensaje=new Mensaje("enviado");
                     return mensaje;
 
